@@ -1,0 +1,62 @@
+#include <Keypad.h>
+
+const byte ROWS = 4; //four rows
+const byte COLS = 3; //three columns
+//define the cymbols on the buttons of the keypads
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+
+
+
+
+
+
+
+
+void setup(){
+  Serial.begin(9600);
+}
+  
+void loop(){
+  char waitForKey()
+  char keyPressed = customKeypad.getKey();
+
+
+
+// Check when a key is pressed  
+  if (keyPressed){
+
+    //While the key pressed is number create variable with numbers enterred
+    while (keyPressed != '*' ){
+
+      Serial.println(keyPressed);
+      keyPressed = keyPressed + keyPressed;
+
+
+      // break the loop when 3 digits have been entered already
+      if (keyPressed.length() = 3){
+        //Read out loud angle entered
+        break;
+        }
+      //break the loop when finishing entering angles
+      if (keyPressed = '#'){
+        break;
+      }
+      
+      }
+    }
+  }
+
+
+
+
+}
