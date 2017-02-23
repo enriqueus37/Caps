@@ -1,0 +1,123 @@
+#include <Wire.h>
+#include <math.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+#include "SD.h"
+#define SD_ChipSelectPin 10
+#include "TMRpcm.h"
+#include "SPI.h"
+
+TMRpcm audio;
+
+int buttonPin; // Declaring the Read Button
+
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+void loop(void) 
+{
+  /* Get a new sensor event */
+  sensors_event_t event;
+  bno.getEvent(&event);
+  double  xpos = event.orientation.x;
+  double ypos = event.orientation.y; 
+  double  zpos = event.orientation.z; // Declare original pos values
+  String xposhunddig, xpostensdig, xposonesdig, xposdecdig; //Declaring the digit values of the original pos values
+
+
+  /* Display the floating point data */
+  Serial.print("X: ");
+  Serial.print(event.orientation.x, 1);
+  Serial.print("\tY: ");
+  // Serial.print(event.orientation.y, 1);
+  Serial.print("\tZ: ");
+  // Serial.print(event.orientation.z, 1);
+
+ 
+
+  /* New line for the next sample */
+  Serial.println("");
+
+  /* Wait the specified delay before requesting nex data */
+  delay(BNO055_SAMPLERATE_DELAY_MS);
+
+
+  buttonPin=digitalRead(2);
+  xpos = event.orientation.x;
+  ypos = event.orientation.y;
+  zpos = event.orientation.z; // Create doubles with the variables give
+  if(buttonPin == LOW) //If the read button is pushed
+    { 
+      if (xpos >= 100) //If angle is over 100 degrees, each digit is found through this
+         {
+          xposhunddig = String(String(xpos - fmod(xpos,100)) + ".wav"); // 100 file
+          xpostensdig = String(String(fmod(xpos,100) - fmod(xpos,10)) + ".wav"); // 10 file
+          xposonesdig = String(String(fmod(xpos,10) - fmod(xpos,1)) + ".wav"); // 1 file
+          xposdecdig = String(String(fmod(xpos,1) * 10) +".wav"); // First digit decimal file
+          
+          char hundreds[xposhunddig.length()+1]; // Declare the Char Matrix of File
+          xposhunddig.toCharArray(hundreds, sizeof(hundreds)); // Convert File to Char Array
+          audio.play(hundreds); // Play 100s File
+
+          char tens[xpostensdig.length()+1]; // Declare the Char Matrix of File
+          xpostensdig.toCharArray(tens, sizeof(tens)); // Convert File to Char Array
+          audio.play(tens); // Play 10s File
+
+          char ones[xposonesdig.length()+1]; // Declare the Char Matrix of File
+          xposonesdig.toCharArray(ones, sizeof(ones)); // Convert File to Char Array
+          audio.play(ones); // Play 1s File
+
+          audio.play("point.wav");
+
+          char decimal[xposdecdig.length()+1]; // Declare the Char Matrix of File
+          xposdecdig.toCharArray(decimal, sizeof(decimal)); // Convert File to Char Array
+          audio.play(decimal); // Play Decimal File
+        
+         }
+       else if (xpos < 100 && xpos >= 10)
+         {
+          xpostensdig = String(String(xpos - fmod(xpos,10)) + ".wav");
+          xposonesdig = String(String(fmod(xpos,10) - fmod(xpos,1)) + ".wav");
+          xposdecdig = String(String(fmod(xpos,1) * 10) +".wav");
+          
+          char tens[xpostensdig.length()+1]; // Declare the Char Matrix of File
+          xpostensdig.toCharArray(tens, sizeof(tens)); // Convert File to Char Array
+          audio.play(tens); // Play 10s File
+
+          char ones[xposonesdig.length()+1]; // Declare the Char Matrix of File
+          xposonesdig.toCharArray(ones, sizeof(ones)); // Convert File to Char Array
+          audio.play(ones); // Play 1s File
+
+          audio.play("point.wav");
+
+          char decimal[xposdecdig.length()+1]; // Declare the Char Matrix of File
+          xposdecdig.toCharArray(decimal, sizeof(decimal)); // Convert File to Char Array
+          audio.play(decimal); // Play Decimal File
+         }
+       else if (xpos <10 && xpos >= 1 )
+         {
+          xposonesdig = String(String(xpos - fmod(xpos,1)) +".wav");
+          xposdecdig = String(String((fmod(xpos,1) * 10)) +".wav");
+    
+          char ones[xposonesdig.length()+1]; // Declare the Char Matrix of File
+          xposonesdig.toCharArray(ones, sizeof(ones)); // Convert File to Char Array
+          audio.play(ones); // Play 1s File
+
+          audio.play("point.wav");
+
+          char decimal[xposdecdig.length()+1]; // Declare the Char Matrix of File
+          xposdecdig.toCharArray(decimal, sizeof(decimal)); // Convert File to Char Array
+          audio.play(decimal); // Play Decimal File
+         }
+       else if (xpos < 1)
+       {
+          xposdecdig = String(String(xpos * 10) +".wav");
+           
+          audio.play("point.wav");
+
+          char decimal[xposdecdig.length()+1]; // Declare the Char Matrix of File
+          xposdecdig.toCharArray(decimal, sizeof(decimal)); // Convert File to Char Array
+          audio.play(decimal); // Play Decimal File
+       }
+    
+    }
