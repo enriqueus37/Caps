@@ -1,4 +1,15 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+#include <Arduino.h>
 #include <Keypad.h>
+
+  
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+
+
 
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //three columns
@@ -13,50 +24,81 @@ byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
 
 //initialize an instance of class NewKeypad
-Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+Keypad customKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
 
 
 
 
 
-
-
-
-void setup(){
+void setup(void) 
+{
   Serial.begin(9600);
-}
+  Serial.println("Orientation Sensor Test"); Serial.println("");
   
-void loop(){
-  char waitForKey()
-  char keyPressed = customKeypad.getKey();
+  /* Initialise the sensor */
+  if(!bno.begin())
+  {
+    /* There was a problem detecting the BNO055 ... check your connections */
+    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    while(1);
+  }
+  
+  delay(1000);
+    
+  bno.setExtCrystalUse(true);
+}
+
+void loop(void) 
+{
+
+  imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+
+  
+  //CHANGE TO DOUBLE FOR MORE PRECISION
+  int angleMeasured;
+  
+  /* Display the floating point data */
+  angleMeasured = euler.y();
+
+  char waitForKey();
+
+  char keys[4];
+  int keyCnt = 0;
+
+  while(keyCnt = 3){
+     
+     char keyPressed = customKeypad.getKey();
+  
+     //Serial.println(keyPressed);
+        
+     if(keyPressed){
+        
+        keys[keyCnt] = keyPressed;
+        keyCnt++;
+        keys[keyCnt] = '\0'; // Keep array NULL terminated
+     }
+  }
+ 
+  Serial.println(keys);
+
+
+  
+  Serial.print("Angle measured: ");
+  Serial.print(angleMeasured);
+  Serial.print("°");
+  Serial.println("");
 
 
 
-// Check when a key is pressed  
-  if (keyPressed){
 
-    //While the key pressed is number create variable with numbers enterred
-    while (keyPressed != '*' ){
-
-      Serial.println(keyPressed);
-      keyPressed = keyPressed + keyPressed;
-
-
-      // break the loop when 3 digits have been entered already
-      if (keyPressed.length() = 3){
-        //Read out loud angle entered
-        break;
-        }
-      //break the loop when finishing entering angles
-      if (keyPressed = '#'){
-        break;
-      }
-      
-      }
-    }
+  if (angleMeasured == 5){
+      Serial.print(" BEEP ");
+      Serial.println("");
   }
 
+  
+  
 
-
-
+  
+  delay(1000);
 }
