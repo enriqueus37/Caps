@@ -21,35 +21,48 @@ void setup()
 {
   Serial.begin(9600);
 }
+
+
+
   
 void loop()
 {
 Serial.println(readVal());
 }
 
+
+
+
 String readVal()
 {
   String myString = "";
   char keyPressed = keyPad.getKey();
-  while (keyPressed != '#')
+  LOOP: while (keyPressed != '#')
   {
     keyPressed = keyPad.getKey();
-    int myStringLength = myString.length();
+    int myStringLength = myString.length();   // Initialize int to measure string length
     if ((keyPressed != NO_KEY) && (keyPressed != '#')) 
     {
+      /*
+      if (keyPressed == '*')
+      {
+        // EDIT - need to write code for "go back to default mode"
+        // myString.concat("."); {goto LOOP;} // Add "." at desired location
+      }
+      */
+      Serial.print("String Length:  "); Serial.println(myStringLength);   // TEST - Print current string length
+      Serial.print("Pressed Digit:  "); Serial.println(keyPressed);    // TEST - Print most recent digit pressed
+      Serial.print("-----------------\n");
       myString.concat(keyPressed);
-      Serial.println(myStringLength);
       if (myStringLength == 2)
       {
-        myString.concat(".");
+        myString.concat(".");   // Add decimal point to string @ XXX.X
       }
-      if (myStringLength > 3)
+      if (myStringLength > 3)   // End entry @ designated length (XXX.X = 5-digits long) including "."
       {
         Serial.println("Entry too long");
         break;
-      }
-      //Serial.println(keyPressed);
-      //playTone();
+      } 
     }  
   }  
   return(myString);  
