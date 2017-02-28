@@ -1,14 +1,90 @@
+#include <Arduino.h>
+#include <Keypad.h>
+
+#define NOTE_G5  784
+#define NOTE_C6  1047
+#define NOTE_D5  587
+
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
-#include <Arduino.h>
-#include <Keypad.h>
+// #include "SD.h"
+// #define SD_ChipSelectPin 53
+#include "TMRpcm.h"
+// #include "SPI.h"
 
-  
+TMRpcm tmrpcm;
+
+/* Set the delay between fresh samples */
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
+void displaySensorDetails(void)
+{
+  sensor_t sensor;
+  bno.getSensor(&sensor);
+  Serial.println("----------SENSOR DETAILS------------");
+  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" xxx");
+  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" xxx");
+  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" xxx");
+  Serial.println("------------------------------------");
+  Serial.println("");
+  delay(500);
+}
 
+void displaySensorStatus(void)
+{
+  /* Get the system status values (mostly for debugging purposes) */
+  uint8_t system_status, self_test_results, system_error;
+  system_status = self_test_results = system_error = 0;
+  bno.getSystemStatus(&system_status, &self_test_results, &system_error);
+
+  /* Display the results in the Serial Monitor */
+  Serial.println("---------SENSOR STATUS-------------");
+  Serial.println("");
+  Serial.print("System Status: 0x");
+  Serial.println(system_status, HEX);
+  Serial.print("Self Test:     0x");
+  Serial.println(self_test_results, HEX);
+  Serial.print("System Error:  0x");
+  Serial.println(system_error, HEX);
+  Serial.println("------------------------------------");
+  Serial.println("");
+  delay(500);
+}
+
+void displayCalStatus(void)
+{
+  /* Get the four calibration values (0..3) */
+  /* Any sensor data reporting 0 should be ignored, */
+  /* 3 means 'fully calibrated" */
+  uint8_t system, gyro, accel, mag;
+  system = gyro = accel = mag = 0;
+  bno.getCalibration(&system, &gyro, &accel, &mag);
+
+  /* The data should be ignored until the system calibration is > 0 */
+  Serial.print("\t");
+  if (!system)
+  {
+    Serial.println("-----CALIBRATRION STATUS--------");
+  }
+
+  /* Display the individual values */
+  Serial.print("Sys:");
+  Serial.print(system, DEC);
+  Serial.print(" G:");
+  Serial.print(gyro, DEC);
+  Serial.print(" A:");
+  Serial.print(accel, DEC);
+  Serial.print(" M:");
+  Serial.print(mag, DEC);
+
+}
 
 
 const byte ROWS = 4; //four rows
@@ -18,23 +94,95 @@ char keys[ROWS][COLS] = {
   {'1','2','3'},
   {'4','5','6'},
   {'7','8','9'},
-  {'*','0','#'}
+  {'*','0','#'} 
 };
-byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = {37, 38, 39, 40}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {34, 35, 36}; //connect to the column pinouts of the keypad
 
 //initialize an instance of class NewKeypad
-Keypad customKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
+Keypad keyPad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
 
-
-
-
-
-void setup(void) 
+String readVal()
 {
+  String myString = "";
+  char keyPressed = keyPad.getKey();
+  LOOP: while (keyPressed != '#')
+  {
+    keyPressed = keyPad.getKey();
+    int myStringLength = myString.length();   // Initialize int to measure string length
+    if ((keyPressed != NO_KEY) && (keyPressed != '#')) 
+    {
+      // Serial.print("String Length:  "); Serial.println(myStringLength);   // TEST - Print current string length
+      // Serial.print("Pressed Digit:  "); Serial.println(keyPressed);    // TEST - Print most recent digit pressed
+      // Serial.print("-----------------\n");
+      myString.concat(keyPressed);
+      /*~~LENGTH LIMIT~~
+      if (myStringLength > 2)   // End entry @ designated length (XXX.X = 5-digits long) including "."
+      {
+        Serial.println("Entry too long");
+        break;
+        goto LOOP;
+      }
+      */ 
+    }  
+  }  
+  return(myString);  
+}
+
+/*
+void findAngleMode(float entry, float xPos)
+{
+  float search = constrain(entry, entry + 0.5, entry - 0.5);
+  while(xpos == search)
+  {
+    tone(9, 1047, 300);
+    break;
+    delay(1);
+  }
+}
+
+*/
+
+void angleMeasureLoop(float entry)
+{
+  float entryRange = constrain(entry, entry - 1, entry + 1);
+  char keyPressed = keyPad.getKey();
+  while (keyPressed != '#')
+  {
+    char keyPressed_1 = keyPad.getKey();
+    sensors_event_t event;
+    bno.getEvent(&event);
+    float xPos = event.orientation.x;
+    /* New line for the next sample */
+    Serial.println("");  
+    /* Wait the specified delay before requesting nex data */
+    delay(BNO055_SAMPLERATE_DELAY_MS);
+
+    /* Display the floating point data */
+    Serial.print("X: ");
+    Serial.print(event.orientation.x, 1);
+    
+    while(xPos == entryRange)
+    {
+      Serial.print("\nSUCCESS!!");
+     // tone(9,1047,300);
+      break;
+      delay(1);
+    }
+    if (keyPressed_1 == '*')
+    {
+      break;
+    }
+  }
+  Serial.print("\nexit loop");  
+}
+
+void setup()
+{
+  tmrpcm.speakerPin = 8;
   Serial.begin(9600);
   Serial.println("Orientation Sensor Test"); Serial.println("");
-  
+
   /* Initialise the sensor */
   if(!bno.begin())
   {
@@ -42,63 +190,41 @@ void setup(void)
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
     while(1);
   }
-  
+/*
+  if (!SD.begin(SD_ChipSelectPin)) 
+  {
+    Serial.println("SD fail");
+    return;
+  }
+*/
   delay(1000);
-    
+
+  /* Display some basic information on this sensor */
+  displaySensorDetails();
+
+  /* Optional: Display current status */
+  displaySensorStatus();
+  
+  /* Optional: Display Calibration Status*/
+  // displayCalStatus();
+
   bno.setExtCrystalUse(true);
+
+tmrpcm.setVolume(6);  
 }
-
-void loop(void) 
+  
+void loop()
 {
-
-  imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
+  //char keyPressed = keyPad.getKey();
   
-  //CHANGE TO DOUBLE FOR MORE PRECISION
-  int angleMeasured;
+  Serial.print("\nwait for input...");
+  String entry = readVal();
+  float entryFloat = entry.toFloat();
   
-  /* Display the floating point data */
-  angleMeasured = euler.y();
+  Serial.print("\nString Value:  ");
+  Serial.print(entry);
+  Serial.print("\nFloat Value:  ");
+  Serial.println(entry.toFloat());
 
-  char waitForKey();
-
-  char keys[4];
-  int keyCnt = 0;
-
-  while(keyCnt = 3){
-     
-     char keyPressed = customKeypad.getKey();
-  
-     //Serial.println(keyPressed);
-        
-     if(keyPressed){
-        
-        keys[keyCnt] = keyPressed;
-        keyCnt++;
-        keys[keyCnt] = '\0'; // Keep array NULL terminated
-     }
-  }
- 
-  Serial.println(keys);
-
-
-  
-  Serial.print("Angle measured: ");
-  Serial.print(angleMeasured);
-  Serial.print("°");
-  Serial.println("");
-
-
-
-
-  if (angleMeasured == 5){
-      Serial.print(" BEEP ");
-      Serial.println("");
-  }
-
-  
-  
-
-  
-  delay(1000);
+  angleMeasureLoop(entry.toFloat());  
 }
