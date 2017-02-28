@@ -1,15 +1,15 @@
-void DefaultMode(void)
+void DefaultMode(float xpos)
   {
-    sensors_event_t event;
-    float xpos = event.orientation.x;
-
     float ninetyrange = constrain(xpos,89.5,90.5);
-    float zerorange = constrain(xpos,359.5,0.5);
+    float threesixtyrange = constrain(xpos,359.5,360);
+    float zerorange = constrain(xpos,0.0,0.5);
     float oneeightyrange = constrain(xpos,179.5,180.5);
     float twoseventy = constrain(xpos,269.5,270.5);
-    while(xpos == ninetyrange || xpos == zerorange || xpos == oneeightyrange || xpos == twoseventy)
+    while(xpos == ninetyrange || xpos == zerorange || xpos == threesixtyrange || xpos == oneeightyrange || xpos == twoseventy)
     {
-    tone(9,1047);
+    tone(9,1047,300);
+    break;
+    delay(1);
     }
     float higherninety = constrain(xpos,90.6,105);
     float lowerninety = constrain(xpos,75,89.4);
@@ -21,7 +21,9 @@ void DefaultMode(void)
     float loweroneseventy = constrain(xpos,255,269.4);
     while(xpos == higherninety || xpos == lowerninety || xpos == higherzero || xpos == lowerzero || xpos == higheroneeighty || xpos==loweroneeighty || xpos==higheroneseventy || xpos==loweroneseventy)
     {
-    tone(9,784);
+    tone(9,784,300);
+    break;
+    delay(1);
     }
     float highninety = constrain(xpos,105.1,120);
     float lowninety = constrain(xpos,60,74.9);
@@ -33,7 +35,8 @@ void DefaultMode(void)
     float lowoneseventy = constrain(xpos,240,254.9);
     while(xpos == highninety || xpos == lowninety || xpos == highzero || xpos == lowzero || xpos == highoneeighty || xpos==lowoneeighty || xpos==highoneseventy || xpos==lowoneseventy)
     {
-    tone(9,587);
+    tone(9,587,300);
+    break;
+    delay(1);
     }
-    noTone(9);
   }
