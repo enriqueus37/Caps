@@ -135,14 +135,14 @@ void angleMeasureLoop(float entry)
   float entryNearNeg = entry - 0.5;
   
   float entryMedPosA = entry + 0.6;
-  float entryMedPosB = entry + 15;
+  float entryMedPosB = entry + 5;
   float entryMedNegA = entry - 0.6;
-  float entryMedNegB = entry - 15; 
+  float entryMedNegB = entry - 5; 
 
-  float entryFarPosA = entry + 15.1;
-  float entryFarPosB = entry + 30;
-  float entryFarNegA = entry - 15.1;
-  float entryFarNegB = entry - 30;
+  float entryFarPosA = entry + 5.1;
+  float entryFarPosB = entry + 10;
+  float entryFarNegA = entry - 5.1;
+  float entryFarNegB = entry - 10;
   
   LOOP: pushVal = digitalRead(inPin);
   while(pushVal == HIGH)
@@ -155,10 +155,29 @@ void angleMeasureLoop(float entry)
     
     float rangeMedPos = constrain(xPos, entryMedPosA, entryMedPosB);
     float rangeMedNeg = constrain(xPos, entryMedNegB, entryMedNegA);
+    float rangeMedZero;
+    if (entryMedNegB < 0)
+    {
+      rangeMedZero = constrain(xPos, 360 + entryMedNegB, 359.9);
+    }
+    float rangeMed360;
+    if (entryMedPosB > 360)
+    {
+      rangeMed360 = constrain (xPos, 0, entryMedPosB - 360); 
+    }
     
     float rangeFarPos = constrain(xPos, entryFarPosA, entryFarPosB);
     float rangeFarNeg = constrain(xPos, entryFarNegB, entryFarNegA);
-      
+    float rangeFarZero;
+    if (entryFarNegB < 0)
+    {
+      rangeFarZero = constrain(xPos, 360 + entryFarNegB, 365 + entryFarNegB);
+    }
+    float rangeFar360;
+    if (entryFarPosB > 360)
+    {
+      rangeFar360 = constrain(xPos, entryMedPosB - 360, entryFarPosB - 360);
+    }
     /* New line for the next sample */
     Serial.println("");  
     /* Wait the specified delay before requesting nex data */
@@ -174,13 +193,13 @@ void angleMeasureLoop(float entry)
       break;
       delay(1);
     }
-    while(xPos == rangeMedPos || xPos == rangeMedNeg)
+    while(xPos == rangeMedPos || xPos == rangeMedNeg || xPos == rangeMedZero || xPos == rangeMed360)
     {
       tone(8,784,300);
       break;
       delay(1);
     }
-    while(xPos == rangeFarPos || xPos == rangeFarNeg)
+    while(xPos == rangeFarPos || xPos == rangeFarNeg || xPos == rangeFarZero || xPos == rangeFar360)
     {
       tone(8, 587, 300);
       break;
@@ -249,6 +268,7 @@ void loop()
   LOOP: Serial.print("\nInput desired angle...");
   String entry = readVal();
   float entryFloat = entry.toFloat();
+  
   if (entryFloat > 360.00)
   {
     Serial.print("\nEntry too Long");
@@ -258,8 +278,8 @@ void loop()
   Serial.print("\nString Value:  ");
   Serial.print(entry);
   Serial.print("\nFloat Value:  ");
-  Serial.println(entry.toFloat());
-
+  Serial.println(entryFloat);
+  
   // pushButtonTest();
-  angleMeasureLoop(entry.toFloat());  
+   angleMeasureLoop(entryFloat);  
 }
