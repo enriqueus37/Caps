@@ -131,14 +131,34 @@ String readVal()
 
 void angleMeasureLoop(float entry)
 {
-  float entryRange = constrain(entry, (entry - 1.0), (entry + 1.0));
+  float entryNearPos = entry + 0.5;
+  float entryNearNeg = entry - 0.5;
+  
+  float entryMedPosA = entry + 0.6;
+  float entryMedPosB = entry + 15;
+  float entryMedNegA = entry - 0.6;
+  float entryMedNegB = entry - 15; 
+
+  float entryFarPosA = entry + 15.1;
+  float entryFarPosB = entry + 30;
+  float entryFarNegA = entry - 15.1;
+  float entryFarNegB = entry - 30;
+  
   LOOP: pushVal = digitalRead(inPin);
-  while (pushVal == HIGH)
+  while(pushVal == HIGH)
   {
     sensors_event_t event;
     bno.getEvent(&event);
     float xPos = event.orientation.x;
-   
+    
+    float rangeNear = constrain(xPos, entryNearNeg, entryNearPos);
+    
+    float rangeMedPos = constrain(xPos, entryMedPosA, entryMedPosB);
+    float rangeMedNeg = constrain(xPos, entryMedNegB, entryMedNegA);
+    
+    float rangeFarPos = constrain(xPos, entryFarPosA, entryFarPosB);
+    float rangeFarNeg = constrain(xPos, entryFarNegB, entryFarNegA);
+      
     /* New line for the next sample */
     Serial.println("");  
     /* Wait the specified delay before requesting nex data */
@@ -147,10 +167,22 @@ void angleMeasureLoop(float entry)
     Serial.print("X: ");
     Serial.print(event.orientation.x, 1);
       
-    while(xPos == entryRange)
+    while(xPos == rangeNear)
     {
       Serial.print("\nSUCCESS!!");
       tone(8,1047,300);
+      break;
+      delay(1);
+    }
+    while(xPos == rangeMedPos || xPos == rangeMedNeg)
+    {
+      tone(8,784,300);
+      break;
+      delay(1);
+    }
+    while(xPos == rangeFarPos || xPos == rangeFarNeg)
+    {
+      tone(8, 587, 300);
       break;
       delay(1);
     }
