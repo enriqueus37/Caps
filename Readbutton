@@ -127,10 +127,6 @@ void ReadButton(double xpos)
   // Declare original pos values
   int xposhunddig, xposhundteendig, xpostensdig, xposonesdig, xposdecdig, xposteensdig; //Declaring the digit values of the original pos values
 
-  if(Serial.available())
-  {
-    if(Serial.read()== 'p')
-    {
   //If the read button is pushed
  
       Serial.println("");
@@ -362,9 +358,7 @@ void ReadButton(double xpos)
             tmrpcm.play(decimal); // Play Decimal File
             delay(1000);
          }
-      }
-    }
-  }
+}
 /**************************************************************************/
 /*
     Arduino setup function (automatically called at startup)
@@ -440,10 +434,8 @@ void loop(void)
   
     /* Wait the specified delay before requesting nex data */
     delay(BNO055_SAMPLERATE_DELAY_MS);
-  //if (readVal == LOW)
-  //{
-    //Serial.println("Pushed");
+   if (readVal == LOW)
+   {
     ReadButton(xpos);
-   // Serial.println("Read complete");
-  //}
+   }
 }
