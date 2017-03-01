@@ -18,8 +18,25 @@ TMRpcm tmrpcm;
 
 /* Set the delay between fresh samples */
 #define BNO055_SAMPLERATE_DELAY_MS (100)
-
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+int inPin = 30;
+int pushVal = 0;
+
+const byte ROWS = 4; //four rows
+const byte COLS = 3; //three columns
+//define the cymbols on the buttons of the keypads
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'} 
+};
+byte rowPins[ROWS] = {37, 38, 39, 40}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {34, 35, 36}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad keyPad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
 
 void displaySensorDetails(void)
 {
@@ -86,22 +103,6 @@ void displayCalStatus(void)
 
 }
 
-
-const byte ROWS = 4; //four rows
-const byte COLS = 3; //three columns
-//define the cymbols on the buttons of the keypads
-char keys[ROWS][COLS] = {
-  {'1','2','3'},
-  {'4','5','6'},
-  {'7','8','9'},
-  {'*','0','#'} 
-};
-byte rowPins[ROWS] = {37, 38, 39, 40}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {34, 35, 36}; //connect to the column pinouts of the keypad
-
-//initialize an instance of class NewKeypad
-Keypad keyPad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
-
 String readVal()
 {
   String myString = "";
@@ -122,65 +123,61 @@ String readVal()
         Serial.println("Entry too long");
         break;
         goto LOOP;
-      }
-      */ 
+      } */
     }  
   }  
   return(myString);  
 }
 
-/*
-void findAngleMode(float entry, float xPos)
-{
-  float search = constrain(entry, entry + 0.5, entry - 0.5);
-  while(xpos == search)
-  {
-    tone(9, 1047, 300);
-    break;
-    delay(1);
-  }
-}
-
-*/
-
 void angleMeasureLoop(float entry)
 {
-  float entryRange = constrain(entry, entry - 1, entry + 1);
-  char keyPressed = keyPad.getKey();
-  while (keyPressed != '#')
+  float entryRange = constrain(entry, (entry - 1.0), (entry + 1.0));
+  LOOP: pushVal = digitalRead(inPin);
+  while (pushVal == HIGH)
   {
-    char keyPressed_1 = keyPad.getKey();
     sensors_event_t event;
     bno.getEvent(&event);
     float xPos = event.orientation.x;
+   
     /* New line for the next sample */
     Serial.println("");  
     /* Wait the specified delay before requesting nex data */
     delay(BNO055_SAMPLERATE_DELAY_MS);
-
     /* Display the floating point data */
     Serial.print("X: ");
     Serial.print(event.orientation.x, 1);
-    
+      
     while(xPos == entryRange)
     {
       Serial.print("\nSUCCESS!!");
-     // tone(9,1047,300);
+      tone(8,1047,300);
       break;
       delay(1);
     }
-    if (keyPressed_1 == '*')
-    {
-      break;
-    }
+    goto LOOP;
+}
+  Serial.print("\nexit Loop");
+}
+
+/* TEST FUNCTION - how to setup pushbutton dependent loop functions
+             - if notPressed >> loop
+             - if Pressed    >> exit loop */
+void pushButtonTest()
+{
+  LOOP: pushVal = digitalRead(inPin);
+  while (pushVal == HIGH)
+  {
+    Serial.print("\n0");
+    goto LOOP;
   }
-  Serial.print("\nexit loop");  
+  Serial.print("exit");
 }
 
 void setup()
 {
   tmrpcm.speakerPin = 8;
   Serial.begin(9600);
+  pinMode(inPin, INPUT);
   Serial.println("Orientation Sensor Test"); Serial.println("");
 
   /* Initialise the sensor */
@@ -217,14 +214,20 @@ void loop()
 {
   //char keyPressed = keyPad.getKey();
   
-  Serial.print("\nwait for input...");
+  LOOP: Serial.print("\nInput desired angle...");
   String entry = readVal();
   float entryFloat = entry.toFloat();
+  if (entryFloat > 360.00)
+  {
+    Serial.print("\nEntry too Long");
+    goto LOOP;
+  }
   
   Serial.print("\nString Value:  ");
   Serial.print(entry);
   Serial.print("\nFloat Value:  ");
   Serial.println(entry.toFloat());
 
+  // pushButtonTest();
   angleMeasureLoop(entry.toFloat());  
 }
