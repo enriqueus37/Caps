@@ -128,23 +128,23 @@ void ReadButton(double xpos)
   int xposhunddig, xposhundteendig, xpostensdig, xposonesdig, xposdecdig, xposteensdig; //Declaring the digit values of the original pos values
 
   if(Serial.available())
- {   
-     //If the read button is pushed
-    { 
+  {
+    if(Serial.read()== 'p')
+    {
+  //If the read button is pushed
+ 
       Serial.println("");
       Serial.println("I Gotta P");
       xposdecdig = round(fmod(xpos,1) * 10); // First digit decimal file
       if (xposdecdig == 10) 
       {
-        xposdecdig = 0;
+        xposdecdig = 0; // First digit decimal file
       }
       char decimal[6]; // Declare the Char Matrix of File
 
       if (xpos >= 100.0)
      //If angle is 100 or higher
       {
-       
-       
           xposhunddig = (xpos - fmod(xpos,100)); // 100 file
           xpostensdig = (fmod(xpos,100) - fmod(xpos,10)); // 10 file
           xposhundteendig = (fmod(xpos,100) - (fmod(xpos,1))); // Teens file
@@ -274,7 +274,6 @@ void ReadButton(double xpos)
             delay(1000);
          }
       }
-      
       else if (xpos < 100 && xpos >= 20) // if the angle is less than 100 and greater than 20
          {
           xpostensdig = (xpos - fmod(xpos,10));
@@ -347,7 +346,6 @@ void ReadButton(double xpos)
        else if ((xpos <10) && (xpos >= 0)) // If angle is in the ones
          {
           xposonesdig = (xpos - fmod(xpos,1));
-    
           char ones[6]; // Declare the Char Matrix of File
             sprintf(ones,"%01d.wav",xposonesdig);
             Serial.println(""); 
@@ -364,9 +362,9 @@ void ReadButton(double xpos)
             tmrpcm.play(decimal); // Play Decimal File
             delay(1000);
          }
-   }
- }
-}
+      }
+    }
+  }
 /**************************************************************************/
 /*
     Arduino setup function (automatically called at startup)
@@ -442,10 +440,10 @@ void loop(void)
   
     /* Wait the specified delay before requesting nex data */
     delay(BNO055_SAMPLERATE_DELAY_MS);
-  if (readVal == LOW)
-  {
-    Serial.println("Pushed");
+  //if (readVal == LOW)
+  //{
+    //Serial.println("Pushed");
     ReadButton(xpos);
-    Serial.println("Read complete");
-  }
+   // Serial.println("Read complete");
+  //}
 }
