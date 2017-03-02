@@ -108,24 +108,20 @@ String readVal()
 {
   String myString = "";
   char keyPressed = keyPad.getKey();
-  LOOP: while (keyPressed != '#')
+  while (keyPressed != '#')
   {
     keyPressed = keyPad.getKey();
-    int myStringLength = myString.length();   // Initialize int to measure string length
-    if ((keyPressed != NO_KEY) && (keyPressed != '#')) 
+    if (keyPressed == '*')
     {
-      // Serial.print("String Length:  "); Serial.println(myStringLength);   // TEST - Print current string length
-      // Serial.print("Pressed Digit:  "); Serial.println(keyPressed);    // TEST - Print most recent digit pressed
-      // Serial.print("-----------------\n");
+      // Serial.println("Star Pressed");
+      myString.concat(".");  
+    }
+    else if ((keyPressed != NO_KEY) && (keyPressed != '#'))
+    {
       myString.concat(keyPressed);
-      /*~~LENGTH LIMIT~~
-      if (myStringLength > 2)   // End entry @ designated length (XXX.X = 5-digits long) including "."
-      {
-        Serial.println("Entry too long");
-        break;
-        goto LOOP;
-      } */
-    }  
+      //Serial.println(keyPressed);
+      //playTone();
+    }
   }  
   return(myString);  
 }
