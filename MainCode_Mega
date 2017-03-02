@@ -1,0 +1,521 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+#include "SD.h"
+#define SD_ChipSelectPin 53
+#include "TMRpcm.h"
+#include "SPI.h"
+#include <Keypad.h>
+
+#define NOTE_G5  784
+#define NOTE_C6  1047
+#define NOTE_D5  587
+
+int pinSpeaker = 8;
+
+int pinButton = 30;
+int pushVal = 0;
+int pinRead = 31;
+int pushReadVal = 0;
+
+TMRpcm tmrpcm;
+
+/* Set the delay between fresh samples */
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+const byte ROWS = 4; //four rows
+const byte COLS = 3; //three columns
+//define the cymbols on the buttons of the keypads
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'} 
+};
+
+byte rowPins[ROWS] = {37, 38, 39, 40}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {34, 35, 36}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad keyPad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
+
+String readKeypad(char initKey)
+{
+  String myString = "";
+  myString.concat(initKey);   // new line with input
+  char keyPressed = keyPad.getKey();
+  while (keyPressed != '#')
+  {
+    keyPressed = keyPad.getKey();
+    if (keyPressed == '*')
+    {
+      // Serial.println("Star Pressed");
+      myString.concat(".");  
+    }
+    else if ((keyPressed != NO_KEY) && (keyPressed != '#'))
+    {
+      myString.concat(keyPressed);
+      //Serial.println(keyPressed);
+      //playTone();
+    }
+  }  
+  return(myString);  
+}
+
+void ReadButton(double xpos)
+{
+  // Declare original pos values
+  int xposhunddig, xposhundteendig, xpostensdig, xposonesdig, xposdecdig, xposteensdig; //Declaring the digit values of the original pos values
+ 
+      Serial.println("");
+      Serial.println("I Gotta P");
+      xposdecdig = round(fmod(xpos,1) * 10); // First digit decimal file
+      if (xposdecdig == 10) 
+      {
+        xposdecdig = 0; // First digit decimal file
+      }
+      char decimal[6]; // Declare the Char Matrix of File
+
+      if (xpos >= 100.0)
+     //If angle is 100 or higher
+      {
+          xposhunddig = (xpos - fmod(xpos,100)); // 100 file
+          xpostensdig = (fmod(xpos,100) - fmod(xpos,10)); // 10 file
+          xposhundteendig = (fmod(xpos,100) - (fmod(xpos,1))); // Teens file
+          xposonesdig = (fmod(xpos,10) - fmod(xpos,1)); // 1 file
+          
+          char hundreds[7]; // Declare the Char Matrix of File
+          char tens[7]; // Declare the Char Matrix of File
+          char teens[7]; // Declare the Char Matrix of File
+          char ones[6]; // Declare the Char Matrix of File
+
+          if (((fmod(xpos,10) - fmod(xpos,1)) != 0) && ((fmod(xpos,100) - fmod(xpos,10)) != 10) && ((fmod(xpos,100) - fmod(xpos,10)) != 0)) 
+          //if 1s digit is not 0 and 10s digit is not 0 or 1
+          { 
+            sprintf(hundreds,"%03d.wav",xposhunddig);
+            Serial.println(""); 
+            Serial.println(hundreds);
+            tmrpcm.play(hundreds); // Play 100s File
+            delay(1000);
+            
+            sprintf(tens,"%02d.wav",xpostensdig);
+            Serial.println(""); 
+            Serial.println(tens);
+            tmrpcm.play(tens); // Play 10s File
+            delay(1000);
+            
+            sprintf(ones,"%01d.wav",xposonesdig);
+            Serial.println(""); 
+            Serial.println(ones);
+            tmrpcm.play(ones); // Play 1s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+          }
+          else if (((fmod(xpos,10) - fmod(xpos,1)) == 0) && ((fmod(xpos,100) - fmod(xpos,10)) != 10) && ((fmod(xpos,100) - fmod(xpos,10)) != 0))
+          //if 1s digit is 0 and 10s digit is not 0 or 1
+          {
+            sprintf(hundreds,"%03d.wav",xposhunddig);
+            Serial.println(""); 
+            Serial.println(hundreds);
+            tmrpcm.play(hundreds); // Play 100s File
+            delay(1000);
+            
+            sprintf(tens,"%02d.wav",xpostensdig);
+            Serial.println(""); 
+            Serial.println(tens);
+            tmrpcm.play(tens); // Play 10s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+          }
+          else if ((fmod(xpos,100) - fmod(xpos,10)) == 10) //if the angle is a hundreds teens digit e.g (216,119)
+         {
+            sprintf(hundreds,"%03d.wav",xposhunddig);
+            Serial.println(""); 
+            Serial.println(hundreds);
+            tmrpcm.play(hundreds); // Play 100s File
+            delay(1000);
+            
+            sprintf(teens,"%02d.wav",xposhundteendig);
+            Serial.println(""); 
+            Serial.println(teens);
+            tmrpcm.play(teens); // Play 10s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+         }
+         else if (((fmod(xpos,100) - fmod(xpos,10)) == 0) && ((fmod(xpos,10) - fmod(xpos,1)) != 0)) //if the angle is a hundred, 10s digit is 0, and a 1s digit e.g (101,305)
+         {
+            sprintf(hundreds,"%03d.wav",xposhunddig);
+            Serial.println(""); 
+            Serial.println(hundreds);
+            tmrpcm.play(hundreds); // Play 100s File
+            delay(1000);
+            
+            sprintf(ones,"%01d.wav",xposonesdig);
+            Serial.println(""); 
+            Serial.println(ones);
+            tmrpcm.play(ones); // Play 1s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+         }
+         else if (((fmod(xpos,10) - fmod(xpos,1)) == 0) && ((fmod(xpos,100) - fmod(xpos,10)) == 0)) // if the 10s and 1s digit are 0 e.g (100,200)
+         //If both 10s and 1s are 0
+         {
+            sprintf(hundreds,"%03d.wav",xposhunddig);
+            Serial.println(""); 
+            Serial.println(hundreds);
+            tmrpcm.play(hundreds); // Play 100s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+         }
+      }
+      else if (xpos < 100 && xpos >= 20) // if the angle is less than 100 and greater than 20
+         {
+          xpostensdig = (xpos - fmod(xpos,10));
+          xposonesdig = (fmod(xpos,10) - fmod(xpos,1));
+          
+          char tens[7]; // Declare the Char Matrix of File 
+          char ones[7]; // Declare the Char Matrix of File
+          
+          if((fmod(xpos,10) - fmod(xpos,1)) != 0) // If ones digit is not 0
+          {
+            sprintf(tens,"%02d.wav",xpostensdig);
+            Serial.println(""); 
+            Serial.println(tens);
+            tmrpcm.play(tens); // Play 10s File
+            delay(1000);
+            
+            sprintf(ones,"%01d.wav",xposonesdig);
+            Serial.println(""); 
+            Serial.println(ones);
+            tmrpcm.play(ones); // Play 1s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+          }
+          else if (fmod(xpos,10) - fmod(xpos,1) == 0) // If ones digit is 0
+          {
+            sprintf(tens,"%02d.wav",xpostensdig);
+            Serial.println(""); 
+            Serial.println(tens);
+            tmrpcm.play(tens); // Play 10s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+          }
+       }
+         else if ((xpos < 20) && (xpos >= 10)) //If the angle is in the teens
+         {
+          xposteensdig = (xpos - fmod(xpos,1));
+
+          char teens[7]; // Declare the Char Matrix of File
+
+          sprintf(teens,"%02d.wav",xposteensdig);
+          Serial.println(""); 
+          Serial.println(teens);
+          tmrpcm.play(teens); // Play 10s File
+          delay(1000);
+          
+          tmrpcm.play("point.wav");
+          delay(700);
+          
+          sprintf(decimal,"%01d.wav",xposdecdig);
+          Serial.println(""); 
+          Serial.println(decimal);
+          tmrpcm.play(decimal); // Play Decimal File
+          delay(1000);
+         }
+       else if ((xpos <10) && (xpos >= 0)) // If angle is in the ones
+         {
+          xposonesdig = (xpos - fmod(xpos,1));
+          char ones[6]; // Declare the Char Matrix of File
+            sprintf(ones,"%01d.wav",xposonesdig);
+            Serial.println(""); 
+            Serial.println(ones);
+            tmrpcm.play(ones); // Play 1s File
+            delay(1000);
+            
+            tmrpcm.play("point.wav");
+            delay(700);
+            
+            sprintf(decimal,"%01d.wav",xposdecdig);
+            Serial.println(""); 
+            Serial.println(decimal);
+            tmrpcm.play(decimal); // Play Decimal File
+            delay(1000);
+         }
+} // end ReadButton
+
+void DefaultMode(float xpos)
+  {
+    float ninetyrange = constrain(xpos,89.5,90.5);
+    float threesixtyrange = constrain(xpos,359.5,360);
+    float zerorange = constrain(xpos,0.0,0.5);
+    float oneeightyrange = constrain(xpos,179.5,180.5);
+    float twoseventy = constrain(xpos,269.5,270.5);
+    while(xpos == ninetyrange || xpos == zerorange || xpos == threesixtyrange || xpos == oneeightyrange || xpos == twoseventy)
+    {
+    tone(pinSpeaker,1047,300);
+    break;
+    delay(1);
+    }
+    float higherninety = constrain(xpos,90.6,95);
+    float lowerninety = constrain(xpos,85,89.4);
+    float higherzero = constrain(xpos,0.6,5);
+    float lowerzero = constrain(xpos,355,359.4);
+    float higheroneeighty = constrain(xpos,180.6,185);
+    float loweroneeighty = constrain(xpos,175,179.4);
+    float higheroneseventy = constrain(xpos,270.5,275);
+    float loweroneseventy = constrain(xpos,265,269.4);
+    while(xpos == higherninety || xpos == lowerninety || xpos == higherzero || xpos == lowerzero || xpos == higheroneeighty || xpos==loweroneeighty || xpos==higheroneseventy || xpos==loweroneseventy)
+    {
+    tone(pinSpeaker,784,300);
+    break;
+    delay(1);
+    }
+    float highninety = constrain(xpos,95.1,100);
+    float lowninety = constrain(xpos,80,84.9);
+    float highzero = constrain(xpos,5.1,10);
+    float lowzero = constrain(xpos,350,354.9);
+    float highoneeighty = constrain(xpos,185.1,190);
+    float lowoneeighty = constrain(xpos,170,174.9);
+    float highoneseventy = constrain(xpos,275.1,280);
+    float lowoneseventy = constrain(xpos,260,264.9);
+    while(xpos == highninety || xpos == lowninety || xpos == highzero || xpos == lowzero || xpos == highoneeighty || xpos==lowoneeighty || xpos==highoneseventy || xpos==lowoneseventy)
+    {
+    tone(pinSpeaker,587,300);
+    break;
+    delay(1);
+    }
+  }
+
+void findAngleLoop(float entry)
+{
+  float entryNearPos = entry + 0.5;
+  float entryNearNeg = entry - 0.5;
+  
+  float entryMedPosA = entry + 0.6;
+  float entryMedPosB = entry + 5;
+  float entryMedNegA = entry - 0.6;
+  float entryMedNegB = entry - 5; 
+
+  float entryFarPosA = entry + 5.1;
+  float entryFarPosB = entry + 10;
+  float entryFarNegA = entry - 5.1;
+  float entryFarNegB = entry - 10;
+  
+  LOOP: pushVal = digitalRead(pinButton);
+  pushReadVal = digitalRead(pinRead);
+  while(pushVal == HIGH)
+  {
+    sensors_event_t event;
+    bno.getEvent(&event);
+    float xPos = event.orientation.x;
+    
+    if (pushReadVal == LOW)
+    {
+      Serial.print("\nREAD BUTTON");
+      ReadButton(xPos);
+    }
+    
+    float rangeNear = constrain(xPos, entryNearNeg, entryNearPos);
+    
+    float rangeMedPos = constrain(xPos, entryMedPosA, entryMedPosB);
+    float rangeMedNeg = constrain(xPos, entryMedNegB, entryMedNegA);
+    float rangeMedZero;
+    if (entryMedNegB < 0)
+    {
+      rangeMedZero = constrain(xPos, 360 + entryMedNegB, 359.9);
+    }
+    float rangeMed360;
+    if (entryMedPosB > 360)
+    {
+      rangeMed360 = constrain (xPos, 0, entryMedPosB - 360); 
+    }
+    
+    float rangeFarPos = constrain(xPos, entryFarPosA, entryFarPosB);
+    float rangeFarNeg = constrain(xPos, entryFarNegB, entryFarNegA);
+    float rangeFarZero;
+    if (entryFarNegB < 0)
+    {
+      rangeFarZero = constrain(xPos, 360 + entryFarNegB, 365 + entryFarNegB);
+    }
+    float rangeFar360;
+    if (entryFarPosB > 360)
+    {
+      rangeFar360 = constrain(xPos, entryMedPosB - 360, entryFarPosB - 360);
+    }
+    /* New line for the next sample */
+    Serial.println("");  
+    /* Wait the specified delay before requesting nex data */
+    delay(BNO055_SAMPLERATE_DELAY_MS);
+    /* Display the floating point data */
+    Serial.print("X: ");
+    Serial.print(event.orientation.x, 1);
+      
+    while(xPos == rangeNear)
+    {
+      Serial.print("\nSUCCESS!!");
+      tone(pinSpeaker,1047,300);
+      break;
+      delay(1);
+    }
+    while(xPos == rangeMedPos || xPos == rangeMedNeg || xPos == rangeMedZero || xPos == rangeMed360)
+    {
+      tone(pinSpeaker,784,300);
+      break;
+      delay(1);
+    }
+    while(xPos == rangeFarPos || xPos == rangeFarNeg || xPos == rangeFarZero || xPos == rangeFar360)
+    {
+      tone(pinSpeaker, 587, 300);
+      break;
+      delay(1);
+    }
+    goto LOOP;
+  }
+  Serial.print("\nexit Loop");
+}  
+
+/**************************************************************************/
+/*
+    Arduino setup function (automatically called at startup)
+*/
+/**************************************************************************/
+void setup()
+{ 
+  tmrpcm.speakerPin = pinSpeaker;
+  Serial.begin(9600);
+  pinMode(pinButton, INPUT);
+  pinMode(pinRead, INPUT);
+  Serial.println("Sensor Default Mode Test"); Serial.println("");
+
+  /* Initialise the sensor */
+  if(!bno.begin())
+  {
+    /* There was a problem detecting the BNO055 ... check your connections */
+    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    while(1);
+  }
+
+  if (!SD.begin(SD_ChipSelectPin)) 
+  {
+    Serial.println("SD fail");
+    return;
+  }
+
+  delay(1000);
+
+  bno.setExtCrystalUse(true);
+
+tmrpcm.setVolume(6);
+}
+/**************************************************************************/
+/*
+    Arduino loop function, called once 'setup' is complete (your own code
+    should go here)
+*/
+/**************************************************************************/
+void loop(void)
+{
+  LOOP: char initKey = keyPad.getKey();
+  
+  /* Get a new sensor event */
+  pushReadVal = digitalRead(pinRead);
+  sensors_event_t event;
+  bno.getEvent(&event);
+  float xpos = event.orientation.x;
+
+  if (pushReadVal == LOW)
+  {
+    ReadButton(xpos);
+  }
+
+  /* New line for the next sample */
+  Serial.println("");
+
+  /* Wait the specified delay before requesting nex data */
+  delay(BNO055_SAMPLERATE_DELAY_MS);
+
+ 
+  /* Display the floating point data */
+  Serial.print("X: ");
+  Serial.print(event.orientation.x, 1);
+
+  DefaultMode(xpos);
+
+  if (initKey != NO_KEY)
+  {
+     Serial.print("\nEnter desired angle...");
+     String entry = readKeypad(initKey);
+     float entryFloat = entry.toFloat();
+
+     if (entryFloat > 360.00)
+     {
+        Serial.print("\nEntry too long!");
+        goto LOOP;
+     }
+     
+     Serial.print("\nString Value:  ");
+     Serial.print(entry);
+     Serial.print("\nFloat Value:  ");
+     Serial.println(entryFloat);
+     
+     findAngleLoop(entryFloat);  
+  }
+}
