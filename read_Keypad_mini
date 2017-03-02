@@ -17,12 +17,27 @@ byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
 //initialize an instance of class NewKeypad
 Keypad keyPad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
 
-
-
-
-
-
-
+String readVal()
+{
+  String myString = "";
+  char keyPressed = keyPad.getKey();
+  while (keyPressed != '#')
+  {
+    keyPressed = keyPad.getKey();
+    if (keyPressed == '*')
+    {
+      Serial.println("Star Pressed");
+      myString.concat(".");  
+    }
+    else if ((keyPressed != NO_KEY) && (keyPressed != '#'))
+    {
+      myString.concat(keyPressed);
+      //Serial.println(keyPressed);
+      //playTone();
+    }
+  }  
+  return(myString);  
+}
 
 void setup(){
   Serial.begin(9600);
@@ -33,18 +48,3 @@ void loop(){
 Serial.println(readVal());
 
 }
-
-
-String readVal(){
- String myString = "";
- char keyPressed = keyPad.getKey();
- while (keyPressed != '#'){
-   keyPressed = keyPad.getKey();
-   if ((keyPressed != NO_KEY) && (keyPressed != '#')) {
-     myString.concat(keyPressed);
-     //Serial.println(keyPressed);
-     //playTone();
-     }  
-   }  
- return(myString);  
- }
