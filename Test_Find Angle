@@ -20,7 +20,8 @@ TMRpcm tmrpcm;
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
-int inPin = 30;
+int pinSpeak = 8;
+int pinButton = 30;
 int pushVal = 0;
 
 const byte ROWS = 4; //four rows
@@ -144,7 +145,7 @@ void angleMeasureLoop(float entry)
   float entryFarNegA = entry - 5.1;
   float entryFarNegB = entry - 10;
   
-  LOOP: pushVal = digitalRead(inPin);
+  LOOP: pushVal = digitalRead(pinButton);
   while(pushVal == HIGH)
   {
     sensors_event_t event;
@@ -189,19 +190,19 @@ void angleMeasureLoop(float entry)
     while(xPos == rangeNear)
     {
       Serial.print("\nSUCCESS!!");
-      tone(8,1047,300);
+      tone(pinSpeak,1047,300);
       break;
       delay(1);
     }
     while(xPos == rangeMedPos || xPos == rangeMedNeg || xPos == rangeMedZero || xPos == rangeMed360)
     {
-      tone(8,784,300);
+      tone(pinSpeak,784,300);
       break;
       delay(1);
     }
     while(xPos == rangeFarPos || xPos == rangeFarNeg || xPos == rangeFarZero || xPos == rangeFar360)
     {
-      tone(8, 587, 300);
+      tone(pinSpeak, 587, 300);
       break;
       delay(1);
     }
@@ -215,7 +216,7 @@ void angleMeasureLoop(float entry)
              - if Pressed    >> exit loop */
 void pushButtonTest()
 {
-  LOOP: pushVal = digitalRead(inPin);
+  LOOP: pushVal = digitalRead(pinButton);
   while (pushVal == HIGH)
   {
     Serial.print("\n0");
@@ -226,9 +227,9 @@ void pushButtonTest()
 
 void setup()
 {
-  tmrpcm.speakerPin = 8;
+  tmrpcm.speakerPin = pinSpeak;
   Serial.begin(9600);
-  pinMode(inPin, INPUT);
+  pinMode(pinButton, INPUT);
   Serial.println("Orientation Sensor Test"); Serial.println("");
 
   /* Initialise the sensor */
