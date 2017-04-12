@@ -705,6 +705,8 @@ void loop(void)
         noTone(pinSpeaker);
         goto LOOP;
      }
+
+     ReadButton(entryFloat);
      
      Serial.print("\nString Value:  ");
      Serial.print(entry);
