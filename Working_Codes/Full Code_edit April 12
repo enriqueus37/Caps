@@ -219,7 +219,7 @@ String readKeypad(char initKey)
           tmrpcm.play("9.wav"); 
           delay(500);    
         }
-        else if (keyPressed == '0')
+        else if (initKey == '0')
         {
           tmrpcm.play("0.wav"); 
           delay(500);    
@@ -499,6 +499,9 @@ void DefaultMode(float xpos)
     while(xpos == higherninety || xpos == lowerninety || xpos == higherzero || xpos == lowerzero || xpos == higheroneeighty || xpos==loweroneeighty || xpos==higheroneseventy || xpos==loweroneseventy)
     {
     tone(pinSpeaker,784,300);
+    delay(300);
+    noTone(pinSpeaker);
+    delay(200);
     break;
     delay(1);
     }
@@ -512,7 +515,7 @@ void DefaultMode(float xpos)
     float lowoneseventy = constrain(xpos,260,264.9);
     while(xpos == highninety || xpos == lowninety || xpos == highzero || xpos == lowzero || xpos == highoneeighty || xpos==lowoneeighty || xpos==highoneseventy || xpos==lowoneseventy)
     {
-    tone(pinSpeaker,587,300);
+    //tone(pinSpeaker,587,300);
     break;
     delay(1);
     }
@@ -601,7 +604,7 @@ void findAngleLoop(float entry)
     }
     while(xPos == rangeFarPos || xPos == rangeFarNeg || xPos == rangeFarZero || xPos == rangeFar360)
     {
-      tone(pinSpeaker, 587, 300);
+      //tone(pinSpeaker, 587, 300);
       break;
       delay(1);
     }
