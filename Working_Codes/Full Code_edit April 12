@@ -219,7 +219,7 @@ String readKeypad(char initKey)
           tmrpcm.play("9.wav"); 
           delay(500);    
         }
-        else if (initKey == '0')
+        else if (keyPressed == '0')
         {
           tmrpcm.play("0.wav"); 
           delay(500);    
