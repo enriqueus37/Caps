@@ -219,7 +219,7 @@ String readKeypad(char initKey)
           tmrpcm.play("9.wav"); 
           delay(500);    
         }
-        else if (initKey == '0')
+        else if (keyPressed == '0')
         {
           tmrpcm.play("0.wav"); 
           delay(500);    
@@ -599,6 +599,9 @@ void findAngleLoop(float entry)
     while(xPos == rangeMedPos || xPos == rangeMedNeg || xPos == rangeMedZero || xPos == rangeMed360)
     {
       tone(pinSpeaker,784,300);
+      delay(300);
+      noTone(pinSpeaker);
+      delay(200);
       break;
       delay(1);
     }
@@ -710,6 +713,7 @@ void loop(void)
      }
 
      ReadButton(entryFloat);
+     noTone(pinSpeaker);
      
      Serial.print("\nString Value:  ");
      Serial.print(entry);
