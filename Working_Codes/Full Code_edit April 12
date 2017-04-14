@@ -31,50 +31,49 @@ void setCal(){
   byte calData;
   bno.setMode( bno.OPERATION_MODE_CONFIG );    // Put into CONFIG_Mode
   delay(25);
-  
-  calData = bno.setCalvalARL(232);
+calData = bno.setCalvalARL(232);
   
   calData = bno.setCalvalARM(3);
   
-  calData = bno.setCalvalMRL(176);
+  calData = bno.setCalvalMRL(248);
   
   calData = bno.setCalvalMRM(2);
   
-  calData = bno.setCalvalAOXL(255);
+  calData = bno.setCalvalAOXL(254);
   
   calData = bno.setCalvalAOXM(255);
   
-  calData = bno.setCalvalAOYL(55);
+  calData = bno.setCalvalAOYL(225);
   
-  calData = bno.setCalvalAOYM(0);
+  calData = bno.setCalvalAOYM(255);
   
-  calData = bno.setCalvalAOZL(21);
+  calData = bno.setCalvalAOZL(20);
  
   calData = bno.setCalvalAOZM(0);
   
-  calData = bno.setCalvalMOXL(255);
+  calData = bno.setCalvalMOXL(251);
   
-  calData = bno.setCalvalMOXM(254);
+  calData = bno.setCalvalMOXM(251);
   
-  calData = bno.setCalvalMOYL(118);
+  calData = bno.setCalvalMOYL(249);
  
   calData = bno.setCalvalMOYM(0);
  
-  calData = bno.setCalvalMOZL(0);
+  calData = bno.setCalvalMOZL(174);
   
-  calData = bno.setCalvalMOZM(255);
+  calData = bno.setCalvalMOZM(2);
   
-  calData = bno.setCalvalGOXL(0);
+  calData = bno.setCalvalGOXL(255);
   
-  calData = bno.setCalvalGOXM(0);
+  calData = bno.setCalvalGOXM(255);
   
-  calData = bno.setCalvalGOYL(255);
+  calData = bno.setCalvalGOYL(254);
   
   calData = bno.setCalvalGOYM(255);
   
-  calData = bno.setCalvalGOZL(0);
+  calData = bno.setCalvalGOZL(255);
   
-  calData = bno.setCalvalGOZM(0);
+  calData = bno.setCalvalGOZM(255);
   
   bno.setMode( bno.OPERATION_MODE_NDOF );    // Put into NDOF Mode
   delay(25);
@@ -499,9 +498,9 @@ void DefaultMode(float xpos)
     while(xpos == higherninety || xpos == lowerninety || xpos == higherzero || xpos == lowerzero || xpos == higheroneeighty || xpos==loweroneeighty || xpos==higheroneseventy || xpos==loweroneseventy)
     {
     tone(pinSpeaker,784,300);
-    delay(300);
+    delay(150);
     noTone(pinSpeaker);
-    delay(200);
+    delay(75);
     break;
     delay(1);
     }
@@ -599,9 +598,9 @@ void findAngleLoop(float entry)
     while(xPos == rangeMedPos || xPos == rangeMedNeg || xPos == rangeMedZero || xPos == rangeMed360)
     {
       tone(pinSpeaker,784,300);
-      delay(300);
+      delay(150);
       noTone(pinSpeaker);
-      delay(200);
+      delay(75);
       break;
       delay(1);
     }
