@@ -476,7 +476,7 @@ void DefaultMode(float xpos)
   {
     xpos = abs(xpos);
   }
-    float ninetyrange = constrain(xpos,89.5,90.5);
+    float ninetyrange = constrain(xpos,87.5,90.5);
     float threesixtyrange = constrain(xpos,359.5,360);
     float zerorange = constrain(xpos,0.0,0.5);
     float oneeightyrange = constrain(xpos,179.5,180.5);
@@ -489,7 +489,7 @@ void DefaultMode(float xpos)
     delay(1);
     }
     float higherninety = constrain(xpos,90.6,95);
-    float lowerninety = constrain(xpos,85,89.4);
+    float lowerninety = constrain(xpos,82,87.4);
     float higherzero = constrain(xpos,0.6,5);
     float lowerzero = constrain(xpos,355,359.4);
     float higheroneeighty = constrain(xpos,180.6,185);
