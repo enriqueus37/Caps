@@ -1,0 +1,62 @@
+#include <Arduino.h>
+#include <Keypad.h>
+
+
+const byte ROWS = 4; //four rows
+const byte COLS = 3; //three columns
+//define the cymbols on the buttons of the keypads
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad customKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); 
+
+
+
+
+
+
+
+
+void setup(){
+  Serial.begin(9600);
+}
+  
+void loop(){
+  
+  char keyPressed = customKeypad.getKey();
+
+  
+
+  char keys[4];
+  int keyCnt = 0;
+
+
+if (keyPressed != NO_KEY){
+
+    Serial.println("Begin");
+
+
+ while (keyCnt < 3)
+      {
+        char keyPressed = customKeypad.getKey();
+        if (keyPressed != NO_KEY){
+        keys[keyCnt] = keyPressed;
+        keyCnt++;
+        keys[keyCnt] = '\0'; // Keep array NULL terminated     
+       }
+    Serial.println(keys);
+   
+      }
+
+
+}
+
+
+}
